@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import type { Session } from "@supabase/supabase-js";
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useState } from "react";
 import { Sidebar } from "@/components/sidebar";
 import { getSupabaseBrowserClient } from "@/lib/supabase";
 
@@ -53,14 +53,6 @@ export function TeamDashboard() {
   const [form, setForm] = useState<FormState>(initialFormState);
   const organizationId = process.env.NEXT_PUBLIC_DEFAULT_ORGANIZATION_ID ?? "";
   const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL ?? "";
-
-  const canCreate = useMemo(() => {
-    return (
-      form.fullName.trim().length > 1 &&
-      form.email.trim().includes("@") &&
-      form.password.trim().length >= 8
-    );
-  }, [form]);
 
   useEffect(() => {
     if (!client) {
@@ -232,6 +224,18 @@ export function TeamDashboard() {
     setSubmitting(true);
 
     try {
+      if (form.fullName.trim().length < 2) {
+        throw new Error("Enter a full name before creating the member.");
+      }
+
+      if (!form.email.trim().includes("@")) {
+        throw new Error("Enter a valid email before creating the member.");
+      }
+
+      if (form.password.trim().length < 8) {
+        throw new Error("Temporary password must be at least 8 characters.");
+      }
+
       const response = await fetch(`${supabaseUrl}/functions/v1/invite-member`, {
         method: "POST",
         headers: {
@@ -392,7 +396,7 @@ export function TeamDashboard() {
                 </div>
                 <button
                   type="submit"
-                  disabled={!canCreate || submitting}
+                  disabled={submitting}
                   className="inline-flex rounded-full bg-[var(--accent)] px-5 py-3 text-sm font-semibold text-slate-950 transition hover:bg-[#2dd4bf] disabled:cursor-not-allowed disabled:opacity-60"
                 >
                   {submitting ? "Creating member..." : "Create member"}
