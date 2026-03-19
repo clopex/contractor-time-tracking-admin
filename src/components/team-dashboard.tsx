@@ -112,7 +112,12 @@ export function TeamDashboard() {
           throw new Error(membershipResponse.error.message);
         }
 
-        const memberships = membershipResponse.data ?? [];
+        const memberships = (membershipResponse.data ?? []) as Array<{
+          user_id: string;
+          role: string;
+          hourly_rate_cents: number | null;
+          is_active: boolean | null;
+        }>;
         const userIds = memberships.map((member) => member.user_id);
         const profileResponse = userIds.length > 0
           ? await currentClient.from("user_profiles").select("id, full_name, email").in("id", userIds)
@@ -122,9 +127,12 @@ export function TeamDashboard() {
           throw new Error(profileResponse.error.message);
         }
 
-        const profileMap = new Map(
-          (profileResponse.data ?? []).map((profile) => [profile.id, profile]),
-        );
+        const profileRows = (profileResponse.data ?? []) as Array<{
+          id: string;
+          full_name: string | null;
+          email: string | null;
+        }>;
+        const profileMap = new Map(profileRows.map((profile) => [profile.id, profile]));
 
         setMembers(
           memberships.map((member) => {
@@ -168,7 +176,12 @@ export function TeamDashboard() {
         throw new Error(membershipResponse.error.message);
       }
 
-      const memberships = membershipResponse.data ?? [];
+      const memberships = (membershipResponse.data ?? []) as Array<{
+        user_id: string;
+        role: string;
+        hourly_rate_cents: number | null;
+        is_active: boolean | null;
+      }>;
       const userIds = memberships.map((member) => member.user_id);
       const profileResponse = userIds.length > 0
         ? await client.from("user_profiles").select("id, full_name, email").in("id", userIds)
@@ -178,9 +191,12 @@ export function TeamDashboard() {
         throw new Error(profileResponse.error.message);
       }
 
-      const profileMap = new Map(
-        (profileResponse.data ?? []).map((profile) => [profile.id, profile]),
-      );
+      const profileRows = (profileResponse.data ?? []) as Array<{
+        id: string;
+        full_name: string | null;
+        email: string | null;
+      }>;
+      const profileMap = new Map(profileRows.map((profile) => [profile.id, profile]));
 
       setMembers(
         memberships.map((member) => {

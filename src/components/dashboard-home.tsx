@@ -130,7 +130,8 @@ export function DashboardHome() {
           throw new Error(timesheetResponse.error.message);
         }
 
-        const userIds = (timesheetResponse.data ?? []).map((row) => row.user_id);
+        const timesheetRows = (timesheetResponse.data ?? []) as Array<{ id: string; user_id: string; status: string }>;
+        const userIds = timesheetRows.map((row) => row.user_id);
         const profileResponse = userIds.length > 0
           ? await currentClient.from("user_profiles").select("id, full_name").in("id", userIds)
           : { data: [], error: null };
@@ -139,12 +140,13 @@ export function DashboardHome() {
           throw new Error(profileResponse.error.message);
         }
 
-        const nameMap = new Map((profileResponse.data ?? []).map((profile) => [profile.id, profile.full_name]));
+        const profileRows = (profileResponse.data ?? []) as Array<{ id: string; full_name: string | null }>;
+        const nameMap = new Map(profileRows.map((profile) => [profile.id, profile.full_name]));
 
         setSummary(summaryPayload as SummaryPayload);
         setProjects(projectResponse.data ?? []);
         setTimesheets(
-          (timesheetResponse.data ?? []).map((row) => ({
+          timesheetRows.map((row) => ({
             ...row,
             full_name: nameMap.get(row.user_id) ?? "Unknown user",
           })),
